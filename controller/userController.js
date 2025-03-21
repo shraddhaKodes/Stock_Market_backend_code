@@ -11,7 +11,7 @@ export const register = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Avatar and Resume are required!", 400));
   }
 
-  const { avatar} = req.files;
+  const { avatar } = req.files;
   const {
     fullName,
     email,
@@ -87,7 +87,6 @@ export const login = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Invalid  Password", 401));
   }
   generateToken(user, "Login Successfully!", 200, res);
-  
 });
 
 export const logout = catchAsyncErrors(async (req, res, next) => {
@@ -96,6 +95,8 @@ export const logout = catchAsyncErrors(async (req, res, next) => {
     .cookie("token", "", {
       httpOnly: true,
       expires: new Date(Date.now()),
+      sameSite: "None",
+      secure: true,
     })
     .json({
       success: true,
@@ -225,13 +226,15 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
     user.resetPasswordExpire = undefined;
     await user.save({ validateBeforeSave: false });
 
-    return next(new ErrorHandler("Email could not be sent. Please try again.", 500));
+    return next(
+      new ErrorHandler("Email could not be sent. Please try again.", 500)
+    );
   }
 });
 
 //RESET PASSWORD
 export const resetPassword = catchAsyncErrors(async (req, res, next) => {
-  console.log("enter for the reset password") ;
+  console.log("enter for the reset password");
   const { token } = req.params;
   const resetPasswordToken = crypto
     .createHash("sha256")
@@ -253,7 +256,7 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
   if (req.body.password !== req.body.confirmPassword) {
     return next(new ErrorHandler("Password & Confirm Password do not match"));
   }
-  user.password =  req.body.password;
+  user.password = req.body.password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
 
